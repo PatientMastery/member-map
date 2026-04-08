@@ -1,1 +1,959 @@
-undefined
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Mastery â Member Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Lato', sans-serif; background: #072B5B; color: #fff; }
+header {
+  background: #072B5B;
+  padding: 0 28px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid #00BFC9;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.header-logo { display: flex; flex-direction: column; line-height: 1; }
+.logo-patient {
+  font-family: 'Lato', sans-serif; font-size: 0.6rem; font-weight: 900;
+  letter-spacing: 4px; text-transform: uppercase; color: #fff; opacity: 0.75;
+}
+.logo-mastery {
+  font-family: 'Lato', sans-serif; font-size: 1.1rem; font-weight: 900;
+  letter-spacing: 5px; text-transform: uppercase; color: #00BFC9; margin-top: -1px;
+}
+.header-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.18); }
+.header-title {
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.6);
+}
+.stats { display: flex; gap: 28px; }
+.stat { text-align: center; }
+.stat .num { font-size: 1.9rem; font-weight: 900; color: #00BFC9; line-height: 1; }
+.stat .lbl { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+#map { height: calc(100vh - 66px); width: 100%; }
+.leaflet-popup-content-wrapper {
+  background: #072B5B; color: #fff;
+  border: 1.5px solid #00BFC9; border-radius: 6px;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.6);
+  font-family: 'Lato', sans-serif; min-width: 200px;
+}
+.leaflet-popup-content { margin: 14px 16px; }
+.leaflet-popup-tip { background: #072B5B; }
+.leaflet-popup-close-button { color: #00BFC9 !important; font-size: 18px !important; top: 8px !important; right: 10px !important; }
+.popup-name { font-weight: 900; font-size: 0.92rem; color: #00BFC9; margin-bottom: 5px; }
+.popup-address { font-size: 0.75rem; color: rgba(255,255,255,0.65); line-height: 1.55; margin-bottom: 6px; }
+.popup-specialties {
+  font-size: 0.7rem; font-weight: 700; color: #072B5B;
+  background: #00BFC9; border-radius: 3px; padding: 2px 7px;
+  display: inline-block; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.leaflet-control-attribution { background: rgba(7,43,91,0.85) !important; color: rgba(255,255,255,0.4) !important; }
+.leaflet-control-attribution a { color: #00BFC9 !important; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="header-logo">
+      <span class="logo-patient">Patient</span>
+      <span class="logo-mastery">Mastery</span>
+    </div>
+    <div class="header-divider"></div>
+    <span class="header-title">Member Map</span>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num">120</div><div class="lbl">Members on Map</div></div>
+  </div>
+</header>
+<div id="map"></div>
+<script>
+var members = [
+  {
+    "name": "Sundberg, Josh",
+    "address": "4403 W. Michigan Ave, Kalamazoo, Michigan 49006",
+    "specialties": "",
+    "lat": 42.2917,
+    "lon": -85.5872
+  },
+  {
+    "name": "Hennie, Craig",
+    "address": "111 Northview Street, Knoxville, TN, 37919",
+    "specialties": "",
+    "lat": 35.9606,
+    "lon": -83.9207
+  },
+  {
+    "name": "Opferkew, Rod",
+    "address": "5402 W Old Shakopee Road, Bloomington, MN, 55437",
+    "specialties": "",
+    "lat": 44.8408,
+    "lon": -93.3532
+  },
+  {
+    "name": "Martin, Tom",
+    "address": "1020 N Providence Rd.610, Media, Pennsylvania, 19063",
+    "specialties": "",
+    "lat": 39.9162,
+    "lon": -75.3879
+  },
+  {
+    "name": "Gavric, Greg",
+    "address": "7003 S Howell ave, suite 1300Oak Creek, WISCONSIN, 53154",
+    "specialties": "",
+    "lat": 42.8815,
+    "lon": -87.8967
+  },
+  {
+    "name": "Awwad, Nader",
+    "address": "2216 Southgate Street, Suite B, Arlington, TX 76013",
+    "specialties": "",
+    "lat": 32.7357,
+    "lon": -97.1081
+  },
+  {
+    "name": "Seiter, Dan",
+    "address": "4760 Stroven Ct, Coopersville, MI, 49404",
+    "specialties": "",
+    "lat": 43.0659,
+    "lon": -85.9294
+  },
+  {
+    "name": "Hulbert, Russell",
+    "address": "6601 Centerville Business Parkway, #160, Dayton, OH 45459",
+    "specialties": "",
+    "lat": 39.7589,
+    "lon": -84.1916
+  },
+  {
+    "name": "Rose, Dustin",
+    "address": "440 sky view court, Rhome, TX, 76078",
+    "specialties": "",
+    "lat": 33.0565,
+    "lon": -97.4722
+  },
+  {
+    "name": "Minton, Trevor",
+    "address": "1280 Civic Dr. Ste.111 Walnut Creek, California 94596",
+    "specialties": "",
+    "lat": 37.9101,
+    "lon": -122.0652
+  },
+  {
+    "name": "Potocki, Thad",
+    "address": "711 East Bidwell St, Suite 15, Folsom, California, 95630",
+    "specialties": "",
+    "lat": 38.6779,
+    "lon": -121.176
+  },
+  {
+    "name": "Hand, Shane",
+    "address": "4506 Greenwich Place, Amarillo,  Texas 79119",
+    "specialties": "",
+    "lat": 35.222,
+    "lon": -101.8313
+  },
+  {
+    "name": "Goff, Jon",
+    "address": "29710 Hwy 281 North, Suite 109, Bulverde, Texas 78163",
+    "specialties": "",
+    "lat": 29.7366,
+    "lon": -98.4086
+  },
+  {
+    "name": "Sands, Justin",
+    "address": "407 W Bridge Rd Ste 8 Polk City IA 50226",
+    "specialties": "",
+    "lat": 41.7702,
+    "lon": -93.7171
+  },
+  {
+    "name": "Cooper, Matt",
+    "address": "31 Cochituate Rd Wayland, Massachusetts 01778",
+    "specialties": "",
+    "lat": 42.3601,
+    "lon": -71.3609
+  },
+  {
+    "name": "Rhodes, Paul",
+    "address": "200 E Fayette Ave, Effingham, IL, 62401",
+    "specialties": "",
+    "lat": 39.1203,
+    "lon": -88.5434
+  },
+  {
+    "name": "Wong, Winnie",
+    "address": "61A/35 Torrens Street, Braddon, ACT 2612, Australia",
+    "specialties": "",
+    "lat": -35.2818,
+    "lon": 149.1319
+  },
+  {
+    "name": "Zielonka, John",
+    "address": "111 Albert Street, World Exchange Plaza, Ground Floor, Suite R115, Ottawa, Ontario, K1P1A5",
+    "specialties": "",
+    "lat": 45.4215,
+    "lon": -75.6972
+  },
+  {
+    "name": "Swatek, Kevin & Erin",
+    "address": "103 Turnberry Circle, Carrollton, GA, 30116",
+    "specialties": "",
+    "lat": 33.5801,
+    "lon": -85.0766
+  },
+  {
+    "name": "Carvajal, Miguel & Leonor",
+    "address": "21806 Canton Pass Ln, Katy, TX, 77450",
+    "specialties": "",
+    "lat": 29.7858,
+    "lon": -95.8244
+  },
+  {
+    "name": "Williams, Karen",
+    "address": "187 Ponsonby Road, Ponsonby, Auckland, New Zealand, 1024",
+    "specialties": "",
+    "lat": -36.861,
+    "lon": 174.743
+  },
+  {
+    "name": "Frankel, Mat",
+    "address": "1320 Belgian Draft Dr, Mount Pleasant,  SC 29429",
+    "specialties": "",
+    "lat": 32.8323,
+    "lon": -79.8284
+  },
+  {
+    "name": "Reinhardt, Graham",
+    "address": "3915 E Exposition Ave. Ste 100 Denver, CO, 80237",
+    "specialties": "",
+    "lat": 39.7392,
+    "lon": -104.9903
+  },
+  {
+    "name": "Arrington, Travis",
+    "address": "7332 Union Creek Way 2F, Midvale, UT, 84047",
+    "specialties": "",
+    "lat": 40.6103,
+    "lon": -111.8993
+  },
+  {
+    "name": "Robson, Andrew",
+    "address": "19 Dadinton Drive, Copcut, Droitwich, Worcs, WR9 7LR, UK",
+    "specialties": "",
+    "lat": 52.2679,
+    "lon": -2.1549
+  },
+  {
+    "name": "St.Cyr, Jackie",
+    "address": "8100 Washington Ave, Ste 210, Houston, TX, 77007-1301",
+    "specialties": "",
+    "lat": 29.7604,
+    "lon": -95.3698
+  },
+  {
+    "name": "Fuller, Scott",
+    "address": "3 Baldwin Green Common STE 207, Woburn, MA 01801",
+    "specialties": "",
+    "lat": 42.4795,
+    "lon": -71.1523
+  },
+  {
+    "name": "Braxton, Chris",
+    "address": "Hedge House Unit 3, Hangersley, Ringwood, UK BH24 3JW",
+    "specialties": "",
+    "lat": 50.8456,
+    "lon": -1.7939
+  },
+  {
+    "name": "Su, Ben",
+    "address": "685 E. Remington Drive, Ste. A, Sunnyvale, CA, 94087",
+    "specialties": "",
+    "lat": 37.3688,
+    "lon": -122.0363
+  },
+  {
+    "name": "Sanchez, Ivan & Sabrina",
+    "address": "3420 w. 185th St. Torrance, California, 90504",
+    "specialties": "",
+    "lat": 33.8358,
+    "lon": -118.3406
+  },
+  {
+    "name": "Shim, James",
+    "address": "5540 Winter Haven Bend, Flowermound, Texas, 75028",
+    "specialties": "",
+    "lat": 33.0145,
+    "lon": -97.0956
+  },
+  {
+    "name": "McCabe, Lauren & David Avolio",
+    "address": "324 Ledgewood Lane Hinesburg, VT 05461",
+    "specialties": "",
+    "lat": 44.3339,
+    "lon": -73.1095
+  },
+  {
+    "name": "Flim, David",
+    "address": "133 52470 Range Rd 221, Ardrossan, AB, T8E 2H8",
+    "specialties": "",
+    "lat": 53.5583,
+    "lon": -113.1156
+  },
+  {
+    "name": "Stoller, Craig",
+    "address": "1114 Sullivan Dr. Ann Arbor, Michigan 48103",
+    "specialties": "zone doc, sports med",
+    "lat": 42.2808,
+    "lon": -83.743
+  },
+  {
+    "name": "Johnson, Kandace",
+    "address": "P.O. Box 156, Victoria, Minnesota, 55386",
+    "specialties": "",
+    "lat": 44.8583,
+    "lon": -93.6552
+  },
+  {
+    "name": "Strunk, Jim & Kim",
+    "address": "1312 Dexter Ridge Dr, Holly Springs NC, 27540",
+    "specialties": "",
+    "lat": 35.6512,
+    "lon": -78.8338
+  },
+  {
+    "name": "Meraz, Barak",
+    "address": "3807 Bridge Rd, Cooper City, Florida 33026",
+    "specialties": "shockwave",
+    "lat": 26.0559,
+    "lon": -80.2717
+  },
+  {
+    "name": "Ruggieri, Rachel",
+    "address": "5455 W 11000 N, Suite 107, Highland, UT, 84003",
+    "specialties": "",
+    "lat": 40.4202,
+    "lon": -111.7982
+  },
+  {
+    "name": "Elmore, Dan",
+    "address": "6150 Red Cedar Drive, Apt 1B, High Point, NC, 27265",
+    "specialties": "",
+    "lat": 35.9557,
+    "lon": -80.0053
+  },
+  {
+    "name": "Schraedel, Tony",
+    "address": "2355 Vanderbilt Beach Rd, Suite 146, Naples, FL, 34109",
+    "specialties": "",
+    "lat": 26.142,
+    "lon": -81.7948
+  },
+  {
+    "name": "Adetola, Yinka (Esther)",
+    "address": "5112 Dominica Lane, Keller, Texas, 76244",
+    "specialties": "",
+    "lat": 32.9345,
+    "lon": -97.2294
+  },
+  {
+    "name": "Czekaj, Brandon",
+    "address": "1617 N Colonial Terrace Arlington, VA 22209",
+    "specialties": "",
+    "lat": 38.8816,
+    "lon": -77.091
+  },
+  {
+    "name": "Young, Sarah",
+    "address": "Shop 4, 112 Birkdale Road, Birkdale  QLD, Australia 4159",
+    "specialties": "functional med",
+    "lat": -27.4628,
+    "lon": 153.1483
+  },
+  {
+    "name": "Zander, Chris",
+    "address": "2403 NW Thurman St, Portland, Oregon 97210",
+    "specialties": "",
+    "lat": 45.5051,
+    "lon": -122.675
+  },
+  {
+    "name": "Ess, Patrick",
+    "address": "712 Main St. W. Locust North Carolina 28097",
+    "specialties": "",
+    "lat": 35.2424,
+    "lon": -80.4226
+  },
+  {
+    "name": "Bonham, Jordan & Michelle",
+    "address": "8928 Clayton Boulevard, Suite 700, Clayton, NC, 27520",
+    "specialties": "",
+    "lat": 35.651,
+    "lon": -78.4564
+  },
+  {
+    "name": "Smith, Andrew & Shantel",
+    "address": "4611 Drendel rd, Downers Grove, IL, 60515",
+    "specialties": "",
+    "lat": 41.8083,
+    "lon": -88.0206
+  },
+  {
+    "name": "Reineck, Luke",
+    "address": "6415 Branch Hill Guinea Pike, Suite 103, Loveland City, OH, 45140",
+    "specialties": "",
+    "lat": 39.2687,
+    "lon": -84.2632
+  },
+  {
+    "name": "Gray, Jon & Heather",
+    "address": "5465 N Hickory Run, Boise,, Idaho, 83713",
+    "specialties": "",
+    "lat": 43.615,
+    "lon": -116.2023
+  },
+  {
+    "name": "Manoucherian, Armen",
+    "address": "2505 Canada Blvd. , suite 1, Glendale, CA, 91208",
+    "specialties": "",
+    "lat": 34.1425,
+    "lon": -118.2551
+  },
+  {
+    "name": "Crockett, Jeff",
+    "address": "5455 W 11000 N, Suite 107, Highland, UT, 84003",
+    "specialties": "",
+    "lat": 40.4202,
+    "lon": -111.7982
+  },
+  {
+    "name": "Hadley, Hampton",
+    "address": "117 Mill Avenue Jacksonville, North Carolina 28540",
+    "specialties": "",
+    "lat": 34.7541,
+    "lon": -77.4302
+  },
+  {
+    "name": "Salko, Elle",
+    "address": "1650 Hospital Drive, Suite 300, Santa Fe, NM 87505",
+    "specialties": "",
+    "lat": 35.687,
+    "lon": -105.9378
+  },
+  {
+    "name": "Illman, Drew & Chris",
+    "address": "123 Eagle Valley Drive Lyons, CO 80540",
+    "specialties": "",
+    "lat": 40.2244,
+    "lon": -105.2719
+  },
+  {
+    "name": "Jones, Mark",
+    "address": "13632 N. Meridian St., Carmel, IN, 46032",
+    "specialties": "",
+    "lat": 39.9784,
+    "lon": -86.118
+  },
+  {
+    "name": "Baker, Matt & Jackie",
+    "address": "2408 S Main St, MARYVILLE, Missouri, 64468",
+    "specialties": "",
+    "lat": 40.3456,
+    "lon": -94.8725
+  },
+  {
+    "name": "Cox, Chris",
+    "address": "7290 E. Broadway Blvd. Suite 124 Tucson, Arizona 85710",
+    "specialties": "",
+    "lat": 32.254,
+    "lon": -110.9742
+  },
+  {
+    "name": "Buchakjian, Mike & Tara",
+    "address": "2 Home Rd, Hatboro, Pennsylvania, 19040",
+    "specialties": "",
+    "lat": 40.1762,
+    "lon": -75.106
+  },
+  {
+    "name": "Drazic, Dave",
+    "address": "351 Pinehurst Drive, Belle river, ON,  N8L0V9",
+    "specialties": "",
+    "lat": 42.2939,
+    "lon": -82.7077
+  },
+  {
+    "name": "Robinson, Jacob",
+    "address": "2340 Grande Blvd SE, Suite F, Rio Rancho, New Mexico, 87124",
+    "specialties": "",
+    "lat": 35.2328,
+    "lon": -106.663
+  },
+  {
+    "name": "Mairs, Ryan",
+    "address": "104 22nd Ave NE Suite 1 Waseca, Minnesota, 56093",
+    "specialties": "",
+    "lat": 44.0769,
+    "lon": -93.5069
+  },
+  {
+    "name": "Chamberlain, Paul",
+    "address": "86 St Helena Rd, Briar Hill, Victoria, Australia 3088",
+    "specialties": "",
+    "lat": -37.6778,
+    "lon": 145.0802
+  },
+  {
+    "name": "Lippman, Max",
+    "address": "4145 Blackhawk Plaza City Cir. Ste 101, Danville, California 94506",
+    "specialties": "chirotouch",
+    "lat": 37.8219,
+    "lon": -121.9997
+  },
+  {
+    "name": "Unruh, John",
+    "address": "302 N. 8th Street, Rogers , Arkansas 72756",
+    "specialties": "",
+    "lat": 36.332,
+    "lon": -94.1185
+  },
+  {
+    "name": "Arora, Nitan",
+    "address": "1200 Waverley st unit 8, Winnipeg, Mb. R3T 0P4 Canada",
+    "specialties": "",
+    "lat": 49.8951,
+    "lon": -97.1384
+  },
+  {
+    "name": "Rivera, Luis",
+    "address": "98 Plaza Silvestre Urb. Entrerios Trujillo Alto, Puerto Rico 00976",
+    "specialties": "chirotouch",
+    "lat": 18.3533,
+    "lon": -65.9947
+  },
+  {
+    "name": "Baugher, Vince",
+    "address": "2500 Lillian Miller Pkwy, Denton, Texas 76210",
+    "specialties": "zone doc, decompression",
+    "lat": 33.2148,
+    "lon": -97.1331
+  },
+  {
+    "name": "Theodosis, Kathryn",
+    "address": "5 Caloola Ave. Oakleigh, Victoria, Melbourne, Australia 3166",
+    "specialties": "",
+    "lat": -37.8989,
+    "lon": 145.0906
+  },
+  {
+    "name": "Parsons, James",
+    "address": "210 Overview PlaceSpring Branch TX, 78070",
+    "specialties": "",
+    "lat": 29.8602,
+    "lon": -98.4628
+  },
+  {
+    "name": "Adams, Joe",
+    "address": "917 Meadowlark Dr, Mansfield, TX 76063",
+    "specialties": "shockwave, neuropathy, neurology, functional med, decompression",
+    "lat": 32.5632,
+    "lon": -97.1414
+  },
+  {
+    "name": "Barclay, Ryan",
+    "address": "1B Silo Path Westford, Massachusetts 01886",
+    "specialties": "",
+    "lat": 42.5795,
+    "lon": -71.4375
+  },
+  {
+    "name": "Domanski, Mark",
+    "address": "12 Shore Road, Savannah, Georgia 31419",
+    "specialties": "zone doc",
+    "lat": 32.0835,
+    "lon": -81.0998
+  },
+  {
+    "name": "House, Joe",
+    "address": "5228 Long Lake Road, Belding, MI, 48809",
+    "specialties": "",
+    "lat": 43.0984,
+    "lon": -85.2281
+  },
+  {
+    "name": "Barkalow, Max",
+    "address": "1830 SE Princeton Dr. Ste D, Grimes, IA, 50111",
+    "specialties": "",
+    "lat": 41.6927,
+    "lon": -93.7899
+  },
+  {
+    "name": "DuPuy, Joe",
+    "address": "208 Roberts Farm Rd., Simpsonville, SC, 29681",
+    "specialties": "",
+    "lat": 34.7179,
+    "lon": -82.2543
+  },
+  {
+    "name": "Brouse, John & Casey",
+    "address": "948 West High Street, Ebensburg, PA, 15931",
+    "specialties": "",
+    "lat": 40.4845,
+    "lon": -78.7239
+  },
+  {
+    "name": "Mahoney, Kenzie",
+    "address": "324 Ledgewood Lane Hinesburg, VT 05461",
+    "specialties": "",
+    "lat": 44.3339,
+    "lon": -73.1095
+  },
+  {
+    "name": "Kowalyk, Teon",
+    "address": "1422 State Route 104, Ontario, New York 14519",
+    "specialties": "neuropathy",
+    "lat": 43.2317,
+    "lon": -77.2642
+  },
+  {
+    "name": "Nelson, Christian",
+    "address": "4612 Birchbend Ln, Fort Worth, Texas 76137",
+    "specialties": "laser",
+    "lat": 32.7555,
+    "lon": -97.3308
+  },
+  {
+    "name": "Sahota, Ranvir",
+    "address": "832 Calico Drive, Rocklin, CA, 95765",
+    "specialties": "",
+    "lat": 38.7907,
+    "lon": -121.2358
+  },
+  {
+    "name": "Wilson, Mick",
+    "address": "2204 Garnet Ave Ste 201, San Diego, California 92109",
+    "specialties": "",
+    "lat": 32.7157,
+    "lon": -117.1611
+  },
+  {
+    "name": "Hinson, Torry",
+    "address": "1510 W. Ustick Road, Suite 120 Meridian, ID, 83646",
+    "specialties": "",
+    "lat": 43.6121,
+    "lon": -116.3915
+  },
+  {
+    "name": "Waldorf, Tom",
+    "address": "971 W. Moana Lane, Reno, Nevada, 89509",
+    "specialties": "",
+    "lat": 39.5296,
+    "lon": -119.8138
+  },
+  {
+    "name": "Pennell, Matt & Samantha",
+    "address": "2205 Cherry Hill Ln. McKinney, TX, 75072",
+    "specialties": "",
+    "lat": 33.1972,
+    "lon": -96.6398
+  },
+  {
+    "name": "Sellathurai, Tharsan",
+    "address": "Koningin Julianalaan 2, Voorburg 2274JK Netherlands",
+    "specialties": "",
+    "lat": 52.0705,
+    "lon": 4.3565
+  },
+  {
+    "name": "Clinton, Lara & Joe",
+    "address": "22102 Blacksburg Court, Katy, TX, 77450",
+    "specialties": "",
+    "lat": 29.7858,
+    "lon": -95.8244
+  },
+  {
+    "name": "Saintaubin, Brett",
+    "address": "3905 Lost Tree Rd SE, Rio Rancho, NM, 87124",
+    "specialties": "",
+    "lat": 35.2328,
+    "lon": -106.663
+  },
+  {
+    "name": "Coffman, Joe & Lisa",
+    "address": "7110 SW 40th St, Miami, Florida 33155",
+    "specialties": "",
+    "lat": 25.7617,
+    "lon": -80.1918
+  },
+  {
+    "name": "Grant, Brett & Ivanka",
+    "address": "Mona Vale, NSW, Australia",
+    "specialties": "",
+    "lat": -33.6834,
+    "lon": 151.304
+  },
+  {
+    "name": "Shrogin, Paul",
+    "address": "9701 Brodie Lane, Ste 200Austin TX 78748",
+    "specialties": "shockwave",
+    "lat": 30.2672,
+    "lon": -97.7431
+  },
+  {
+    "name": "Grant, Brett & Ivanka",
+    "address": "Mona Vale, NSW, Australia",
+    "specialties": "",
+    "lat": -33.6834,
+    "lon": 151.304
+  },
+  {
+    "name": "Ricks, Jamie",
+    "address": "3135 E. Overland Rd., Suite 110  Meridian, ID 83642",
+    "specialties": "neuropathy, laser",
+    "lat": 43.6121,
+    "lon": -116.3915
+  },
+  {
+    "name": "Giust, Mark",
+    "address": "591 Halbert Height Rd, Brookhaven, Mississippi, 39601",
+    "specialties": "",
+    "lat": 31.5793,
+    "lon": -90.4409
+  },
+  {
+    "name": "Wickiser, Clay",
+    "address": "122 East West Parkway, Anderson, SC 29621",
+    "specialties": "",
+    "lat": 34.5034,
+    "lon": -82.6501
+  },
+  {
+    "name": "Hanny, Nick & Hilary",
+    "address": "3400 Forestway Ct, Arlington, TX, 76001",
+    "specialties": "",
+    "lat": 32.7357,
+    "lon": -97.1081
+  },
+  {
+    "name": "Brents, Karyn",
+    "address": "80 Rolleston Drive, Office 2/Level 2, Rolleston, Canterbury, New Zealand 7614",
+    "specialties": "",
+    "lat": -43.5932,
+    "lon": 172.3847
+  },
+  {
+    "name": "Moeller, Reed",
+    "address": "932 Ascot Dr. Maineville, Warren, Ohio 45039",
+    "specialties": "neuro-emotional technique",
+    "lat": 39.3128,
+    "lon": -84.2277
+  },
+  {
+    "name": "Meeks, Sherry",
+    "address": "680 Dunlap Rd, Milledgeville, Georgia 31061",
+    "specialties": "",
+    "lat": 33.0801,
+    "lon": -83.2321
+  },
+  {
+    "name": "Clark, Nate",
+    "address": "1475 N Dilleys Rd, Suite 2, Gurnee, IL, 60031",
+    "specialties": "",
+    "lat": 42.3706,
+    "lon": -87.9284
+  },
+  {
+    "name": "Hansen, Scott",
+    "address": "25272 McIntyre St. Suite H Laguna Hills, California 92653",
+    "specialties": "",
+    "lat": 33.5964,
+    "lon": -117.7006
+  },
+  {
+    "name": "Scott, Joe & Rachel",
+    "address": "5001 NE North Shore Rd, Belfair, WA98528",
+    "specialties": "",
+    "lat": 47.4415,
+    "lon": -122.8258
+  },
+  {
+    "name": "Pettigrew, Josh",
+    "address": "11481 SW Hall Blvd, Suite 101, Tigard, OR, 97223",
+    "specialties": "",
+    "lat": 45.4312,
+    "lon": -122.7715
+  },
+  {
+    "name": "Singleton, Michael",
+    "address": "1573 Main St. Brewster, Massachusetts 02631",
+    "specialties": "",
+    "lat": 41.762,
+    "lon": -70.0826
+  },
+  {
+    "name": "Caruso, John",
+    "address": "23100 Clay Road, Apt 5104, Katy, TX, 77493",
+    "specialties": "",
+    "lat": 29.7858,
+    "lon": -95.8244
+  },
+  {
+    "name": "Dworak, Ty",
+    "address": "315 E Calhoun Dr, Fort Calhoun, NE, 68023",
+    "specialties": "",
+    "lat": 41.4511,
+    "lon": -96.0202
+  },
+  {
+    "name": "Kowalke, Terry",
+    "address": "7-2536 Main Street, Winnipeg, Canada MB R2V4Y1",
+    "specialties": "",
+    "lat": 49.8951,
+    "lon": -97.1384
+  },
+  {
+    "name": "Ambrose, Belinda",
+    "address": "Selegate House, 1 Hencotes, Hexham, Northumberland, NE462EQ",
+    "specialties": "",
+    "lat": 54.9713,
+    "lon": -2.1013
+  },
+  {
+    "name": "Laneville, Bryan",
+    "address": "880 75th St. Willowbrook, Illinois 60527",
+    "specialties": "",
+    "lat": 41.7553,
+    "lon": -87.9418
+  },
+  {
+    "name": "Keshavarz, Milad",
+    "address": "7100 Hayvenhurst Ave, Suite 109, Van Nuys, CA, 91406",
+    "specialties": "",
+    "lat": 34.1897,
+    "lon": -118.449
+  },
+  {
+    "name": "Stark, Randy & Lysa",
+    "address": "8391 Bluff Circle, Huntington Beach, CA, 92646",
+    "specialties": "",
+    "lat": 33.6595,
+    "lon": -117.9988
+  },
+  {
+    "name": "Stubbs, James",
+    "address": "3311 Galesburg Dr, Austin, TX, 78745",
+    "specialties": "",
+    "lat": 30.2672,
+    "lon": -97.7431
+  },
+  {
+    "name": "Reid, Jenae",
+    "address": "5/79 Waratah Avenue Dalkeith, Perth, Australia 6009",
+    "specialties": "",
+    "lat": -31.9897,
+    "lon": 115.8122
+  },
+  {
+    "name": "Sickle, Jason Van",
+    "address": "218 Lost Trails Pl, Idaho Falls, Idaho, 83404",
+    "specialties": "",
+    "lat": 43.4927,
+    "lon": -112.0408
+  },
+  {
+    "name": "Cross, Paul",
+    "address": "7500 Stonebrook Parkway #103, Frisco, TX, 75034",
+    "specialties": "",
+    "lat": 33.1506,
+    "lon": -96.8236
+  },
+  {
+    "name": "Johnson, Eli",
+    "address": "608 W Sartell St, Sartell, Minnesota 56377",
+    "specialties": "",
+    "lat": 45.6199,
+    "lon": -94.2138
+  },
+  {
+    "name": "Johnson, Derian",
+    "address": "21715 Cordia Trace, Cypress, TX, 77433",
+    "specialties": "",
+    "lat": 29.9691,
+    "lon": -95.6974
+  },
+  {
+    "name": "Baker, Tyler",
+    "address": "1054 E Riverside Dr, Suite 202, St George, UT, 84790",
+    "specialties": "",
+    "lat": 37.0965,
+    "lon": -113.5684
+  },
+  {
+    "name": "Or, Alvin",
+    "address": "Flat G, 9/F, Block 5, La Cite Noble, Hang Hau, Hong Kong, 000000",
+    "specialties": "",
+    "lat": 22.3193,
+    "lon": 114.1694
+  },
+  {
+    "name": "Albert, Nick",
+    "address": "3720 Stillwater Cir, Waukesha, Wi, 53189",
+    "specialties": "",
+    "lat": 43.0117,
+    "lon": -88.2315
+  },
+  {
+    "name": "Williams, Thomas",
+    "address": "4384 Clearwater Way, Lexington, KY, 40515",
+    "specialties": "",
+    "lat": 38.0406,
+    "lon": -84.5037
+  }
+];
+
+var map = L.map('map', { center: [30, -40], zoom: 2, minZoom: 2 });
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+  attribution: 'Â© <a href="https://carto.com/">CARTO</a> Â© <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+  maxZoom: 19, subdomains: 'abcd'
+}).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19, subdomains: 'abcd', opacity: 0.55, pane: 'shadowPane'
+}).addTo(map);
+
+members.forEach(function(m) {
+  var marker = L.circleMarker([m.lat, m.lon], {
+    radius: 8,
+    fillColor: '#00BFC9',
+    color: '#072B5B',
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.9
+  }).addTo(map);
+
+  marker.on('mouseover', function() {
+    this.setStyle({ fillColor: '#fff', color: '#00BFC9', radius: 10 });
+  });
+  marker.on('mouseout', function() {
+    this.setStyle({ fillColor: '#00BFC9', color: '#072B5B', radius: 8 });
+  });
+
+  var popupContent = '<div class="popup-name">' + m.name + '</div>' +
+    '<div class="popup-address">' + m.address + '</div>';
+  if (m.specialties) {
+    popupContent += '<div class="popup-specialties">â¦ ' + m.specialties + '</div>';
+  }
+  marker.bindPopup(popupContent, { maxWidth: 280 });
+});
+</script>
+</body>
+</html>
