@@ -71,7 +71,7 @@ header {
     <span class="header-title">Member Map</span>
   </div>
   <div class="stats">
-    <div class="stat"><div class="num">120</div><div class="lbl">Members on Map</div></div>
+    <div class="stat"><div class="num">119</div><div class="lbl">Members on Map</div></div>
   </div>
 </header>
 <div id="map"></div>
@@ -219,7 +219,7 @@ var members = [
   },
   {
     "name": "Williams, Karen",
-    "address": "187 Ponsonby Road, Ponsonby, Auckland, New Zealand, 1024",
+    "address": "187 Ponsomby Road, Ponsomby, Auckland, New Zealand, 1024",
     "specialties": "",
     "lat": -36.861,
     "lon": 174.743
@@ -349,13 +349,6 @@ var members = [
     "specialties": "",
     "lat": 35.9557,
     "lon": -80.0053
-  },
-  {
-    "name": "Schraedel, Tony",
-    "address": "2355 Vanderbilt Beach Rd, Suite 146, Naples, FL, 34109",
-    "specialties": "",
-    "lat": 26.142,
-    "lon": -81.7948
   },
   {
     "name": "Adetola, Yinka (Esther)",
@@ -950,7 +943,7 @@ members.forEach(function(m) {
   var popupContent = '<div class="popup-name">' + m.name + '</div>' +
     '<div class="popup-address">' + m.address + '</div>';
   if (m.specialties) {
-    popupContent += '<div class="popup-specialties">â¦ ' + m.specialties + '</div>';
+    popupContent += '<div class="popup-specialties">' + m.specialties + '</div>';
   }
   marker.bindPopup(popupContent, { maxWidth: 280 });
 });
