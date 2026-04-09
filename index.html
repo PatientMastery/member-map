@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patient Mastery â Member Map</title>
+<title>Patient Mastery | Member Map</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet"/>
@@ -491,8 +491,6 @@ var members = [
     "lon": -106.663
   },
   {
-    "name,
-  {
     "name": "Mairs, Ryan",
     "address": "104 22nd Ave NE Suite 1 Waseca, Minnesota, 56093",
     "specialties": "",
@@ -917,7 +915,7 @@ var members = [
 var map = L.map('map', { center: [30, -40], zoom: 2, minZoom: 2 });
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-  attribution: 'Â© <a href="https://carto.com/">CARTO</a> Â© <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+  attribution: '\u00a9 <a href="https://carto.com/">CARTO</a> \u00a9 <a href="https://www.openstreetmap.org/copyright">OSM</a>',
   maxZoom: 19, subdomains: 'abcd'
 }).addTo(map);
 
