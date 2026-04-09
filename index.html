@@ -799,7 +799,7 @@ var members = [
     "lon": -95.8244
   },
   {
-    "name": "Dworak, Ty",
+    "name": "DWorak, Ty",
     "address": "315 E Calhoun Dr, Fort Calhoun, NE, 68023",
     "specialties": "",
     "lat": 41.4511,
@@ -923,8 +923,31 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.p
   maxZoom: 19, subdomains: 'abcd', opacity: 0.55, pane: 'shadowPane'
 }).addTo(map);
 
-members.forEach(function(m) {
-  var marker = L.circleMarker([m.lat, m.lon], {
+// Offset stacked pins so they appear side-by-side
+var coordGroups = {};
+members.forEach(function(m, i) {
+  var key = m.lat.toFixed(5) + ',' + m.lon.toFixed(5);
+  if (!coordGroups[key]) coordGroups[key] = [];
+  coordGroups[key].push(i);
+});
+var memberCoords = members.map(function(m) { return [m.lat, m.lon]; });
+Object.keys(coordGroups).forEach(function(key) {
+  var group = coordGroups[key];
+  if (group.length > 1) {
+    var r = 0.0006;
+    group.forEach(function(idx, j) {
+      var angle = (2 * Math.PI * j / group.length) - Math.PI / 2;
+      memberCoords[idx] = [
+        members[idx].lat + r * Math.cos(angle),
+        members[idx].lon + r * Math.sin(angle)
+      ];
+    });
+  }
+});
+
+members.forEach(function(m, i) {
+  var coords = memberCoords[i];
+  var marker = L.circleMarker(coords, {
     radius: 8,
     fillColor: '#00BFC9',
     color: '#072B5B',
