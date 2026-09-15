@@ -977,13 +977,13 @@ var members = [
 
 var map = L.map('map', { center: [30, -40], zoom: 2, minZoom: 2 });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-  attribution: '\u00a9 <a href="https://carto.com/">CARTO</a> \u00a9 <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-  maxZoom: 19, subdomains: 'abcd'
+L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '\u00a9 <a href="https://www.esri.com/">Esri</a>, HERE, Garmin, \u00a9 <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
+  maxZoom: 19, maxNativeZoom: 16
 }).addTo(map);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-  maxZoom: 19, subdomains: 'abcd', opacity: 0.55, pane: 'shadowPane'
+L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19, maxNativeZoom: 16, opacity: 0.85, pane: 'shadowPane'
 }).addTo(map);
 
 // Offset stacked pins so they appear side-by-side
